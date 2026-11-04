@@ -10,6 +10,7 @@ namespace Veterinaria.Api.Controllers;
 public class PropietariosController(VeterinariaContext db) : ControllerBase
 {
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<Propietarios>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<Propietarios>>> GetAll([FromQuery] string? nombre, CancellationToken ct)
     {
         var query = db.Propietarios.AsNoTracking();
@@ -19,6 +20,8 @@ public class PropietariosController(VeterinariaContext db) : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(Propietarios), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Propietarios>> GetById(int id, CancellationToken ct)
     {
         var propietario = await db.Propietarios.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id, ct);
@@ -26,6 +29,8 @@ public class PropietariosController(VeterinariaContext db) : ControllerBase
     }
 
     [HttpGet("{id:int}/mascotas")]
+    [ProducesResponseType(typeof(IEnumerable<Mascotas>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IEnumerable<Mascotas>>> GetMascotas(int id, CancellationToken ct)
     {
         if (!await db.Propietarios.AnyAsync(p => p.Id == id, ct)) return NotFound();
@@ -34,6 +39,9 @@ public class PropietariosController(VeterinariaContext db) : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(Propietarios), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Propietarios>> Create(Propietarios propietario, CancellationToken ct)
     {
         if (propietario.Id != 0) return BadRequest(new { mensaje = "El id se genera automáticamente; envía 0 u omítelo." });
@@ -47,6 +55,10 @@ public class PropietariosController(VeterinariaContext db) : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Update(int id, Propietarios propietario, CancellationToken ct)
     {
         if (id != propietario.Id) return BadRequest(new { mensaje = "El id de la ruta debe coincidir con el cuerpo." });
@@ -63,6 +75,9 @@ public class PropietariosController(VeterinariaContext db) : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
         var propietario = await db.Propietarios.FindAsync([id], ct);

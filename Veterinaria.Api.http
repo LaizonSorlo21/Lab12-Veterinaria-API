@@ -1,6 +1,159 @@
-@Veterinaria.Api_HostAddress = http://localhost:5111
+@baseUrl = https://lab12-veterinaria-api.onrender.com
+@ownerId = {{createOwner.response.body.$.id}}
+@petId = {{createPet.response.body.$.id}}
 
-GET {{Veterinaria.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+### 01 Listar propietarios 200
+GET {{baseUrl}}/api/propietarios
 
-###
+### 02 Detalle propietario 200 (Ana tiene id 1 en los datos iniciales)
+GET {{baseUrl}}/api/propietarios/1
+
+### 03 Filtrar propietarios 200
+GET {{baseUrl}}/api/propietarios?nombre=Ana
+
+### 04 Ruta anidada 200
+GET {{baseUrl}}/api/propietarios/1/mascotas
+
+### 05 Listar mascotas con propietario 200
+GET {{baseUrl}}/api/mascotas
+
+### 06 Detalle mascota 200 (tomar un id de la solicitud anterior)
+GET {{baseUrl}}/api/mascotas/1
+
+### 07 Filtros combinados 200
+GET {{baseUrl}}/api/mascotas?especie=Perro&propietarioId=1&edadMin=1&edadMax=10
+
+### 08 Crear propietario temporal 201; conservar Location y el id
+# @name createOwner
+POST {{baseUrl}}/api/propietarios
+Content-Type: application/json
+
+{"nombre":"Propietario de prueba","email":"captura.{{$guid}}@example.com","telefono":"900123456"}
+
+### 09 Crear mascota temporal sin objeto propietario 201
+# @name createPet
+POST {{baseUrl}}/api/mascotas
+Content-Type: application/json
+
+{"nombre":"Nube de prueba","especie":"Gato","edad":2,"peso":4.25,"propietarioId":{{ownerId}}}
+
+### 10 Volver a crear la misma mascota 409
+POST {{baseUrl}}/api/mascotas
+Content-Type: application/json
+
+{"nombre":"Nube de prueba","especie":"Gato","edad":2,"peso":4.25,"propietarioId":{{ownerId}}}
+
+### 11 Actualizar propietario temporal 204
+PUT {{baseUrl}}/api/propietarios/{{ownerId}}
+Content-Type: application/json
+
+{"id":{{ownerId}},"nombre":"Propietario actualizado","email":"actualizado.{{$guid}}@example.com","telefono":"900987654"}
+
+### 12 Actualizar mascota temporal 204
+PUT {{baseUrl}}/api/mascotas/{{petId}}
+Content-Type: application/json
+
+{"id":{{petId}},"nombre":"Nube de prueba","especie":"Gato","edad":3,"peso":4.75,"propietarioId":{{ownerId}}}
+
+### 13 Comprobar actualización de propietario 200
+GET {{baseUrl}}/api/propietarios/{{ownerId}}
+
+### 14 Comprobar actualización de mascota 200
+GET {{baseUrl}}/api/mascotas/{{petId}}
+
+### 15 Datos inválidos Required y EmailAddress 400
+POST {{baseUrl}}/api/propietarios
+Content-Type: application/json
+
+{"nombre":"","email":"correo-invalido","telefono":"900123456"}
+
+### 16 Range de edad y peso 400
+POST {{baseUrl}}/api/mascotas
+Content-Type: application/json
+
+{"nombre":"Invalida","especie":"Perro","edad":-1,"peso":0,"propietarioId":1}
+
+### 17 FK inexistente 400
+POST {{baseUrl}}/api/mascotas
+Content-Type: application/json
+
+{"nombre":"Invalida","especie":"Perro","edad":2,"peso":5,"propietarioId":2147483647}
+
+### 18 Id ruta distinto del cuerpo propietario 400
+PUT {{baseUrl}}/api/propietarios/2147483647
+Content-Type: application/json
+
+{"id":{{ownerId}},"nombre":"Prueba","email":"prueba@example.com","telefono":"900123456"}
+
+### 19 Id ruta distinto del cuerpo mascota 400
+PUT {{baseUrl}}/api/mascotas/2147483647
+Content-Type: application/json
+
+{"id":{{petId}},"nombre":"Prueba","especie":"Gato","edad":2,"peso":4,"propietarioId":{{ownerId}}}
+
+### 20 Propietario no encontrado 404
+GET {{baseUrl}}/api/propietarios/2147483647
+
+### 21 Mascota no encontrada 404
+GET {{baseUrl}}/api/mascotas/2147483647
+
+### 22 Ruta anidada no encontrada 404
+GET {{baseUrl}}/api/propietarios/2147483647/mascotas
+
+### 23 Correo duplicado 409
+POST {{baseUrl}}/api/propietarios
+Content-Type: application/json
+
+{"nombre":"Duplicado","email":"ana.torres@example.com","telefono":"900123456"}
+
+### 24 Propietario con mascotas no se puede eliminar 409
+DELETE {{baseUrl}}/api/propietarios/1
+
+### 25 Rango de filtros inválido 400
+GET {{baseUrl}}/api/mascotas?edadMin=10&edadMax=1
+
+### 26 Actualizar propietario inexistente 404
+PUT {{baseUrl}}/api/propietarios/2147483647
+Content-Type: application/json
+
+{"id":2147483647,"nombre":"Inexistente","email":"inexistente@example.com","telefono":"900123456"}
+
+### 27 Actualizar mascota inexistente 404
+PUT {{baseUrl}}/api/mascotas/2147483647
+Content-Type: application/json
+
+{"id":2147483647,"nombre":"Inexistente","especie":"Gato","edad":1,"peso":1,"propietarioId":1}
+
+### 28 Eliminar mascota temporal 204 (hacer al final)
+DELETE {{baseUrl}}/api/mascotas/{{petId}}
+
+### 29 Verificar mascota eliminada 404
+GET {{baseUrl}}/api/mascotas/{{petId}}
+
+### 30 Eliminar propietario temporal 204 (primero elimina su mascota)
+DELETE {{baseUrl}}/api/propietarios/{{ownerId}}
+
+### 31 Verificar propietario eliminado 404
+GET {{baseUrl}}/api/propietarios/{{ownerId}}
+
+### 32 Eliminar propietario inexistente 404
+DELETE {{baseUrl}}/api/propietarios/2147483647
+
+### 33 Eliminar mascota inexistente 404
+DELETE {{baseUrl}}/api/mascotas/2147483647
+
+### 34 Salud de la API y conexión con Neon 200
+GET {{baseUrl}}/health
+
+### 35 Documento OpenAPI publicado 200
+GET {{baseUrl}}/openapi/v1.json
+
+### 36 CORS permitido 204 con Access-Control-Allow-Origin
+OPTIONS {{baseUrl}}/api/mascotas
+Origin: https://lab12-veterinaria-api.onrender.com
+Access-Control-Request-Method: POST
+
+### 37 CORS ajeno 204 sin Access-Control-Allow-Origin
+OPTIONS {{baseUrl}}/api/mascotas
+Origin: https://origen-no-permitido.example
+Access-Control-Request-Method: POST

@@ -10,6 +10,8 @@ namespace Veterinaria.Api.Controllers;
 public class MascotasController(VeterinariaContext db) : ControllerBase
 {
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<Mascotas>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<IEnumerable<Mascotas>>> GetAll(
         [FromQuery] string? especie, [FromQuery] int? propietarioId,
         [FromQuery] int? edadMin, [FromQuery] int? edadMax, CancellationToken ct)
@@ -26,6 +28,8 @@ public class MascotasController(VeterinariaContext db) : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(Mascotas), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Mascotas>> GetById(int id, CancellationToken ct)
     {
         var mascota = await db.Mascotas.AsNoTracking().Include(m => m.Propietario)
@@ -34,6 +38,9 @@ public class MascotasController(VeterinariaContext db) : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(Mascotas), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Mascotas>> Create(Mascotas mascota, CancellationToken ct)
     {
         if (mascota.Id != 0) return BadRequest(new { mensaje = "El id se genera automáticamente; envía 0 u omítelo." });
@@ -51,6 +58,10 @@ public class MascotasController(VeterinariaContext db) : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Update(int id, Mascotas mascota, CancellationToken ct)
     {
         if (id != mascota.Id) return BadRequest(new { mensaje = "El id de la ruta debe coincidir con el cuerpo." });
@@ -72,6 +83,8 @@ public class MascotasController(VeterinariaContext db) : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
         var mascota = await db.Mascotas.FindAsync([id], ct);

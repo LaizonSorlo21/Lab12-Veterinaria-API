@@ -22,6 +22,11 @@ jobs:
         run: |
           dotnet restore Veterinaria.Api.csproj
           dotnet ef dbcontext scaffold 'Name=ConnectionStrings:Veterinaria' Npgsql.EntityFrameworkCore.PostgreSQL --context VeterinariaContext --context-dir Data --output-dir Models --table propietarios --table mascotas --data-annotations --no-onconfiguring --no-pluralize --force
+      - name: Restaurar validaciones después de Scaffold
+        shell: pwsh
+        run: ./tools/Apply-Validations.ps1
+      - name: Compilar modelo validado
+        run: dotnet build -c Release
       - name: Guardar modelo generado
         run: |
           git config user.name 'github-actions[bot]'

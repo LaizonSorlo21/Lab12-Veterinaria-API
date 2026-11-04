@@ -12,7 +12,12 @@ if (!Uri.TryCreate(allowedOrigin, UriKind.Absolute, out var origin) ||
     throw new InvalidOperationException("Cors:AllowedOrigin debe ser un origen HTTPS concreto sin ruta.");
 builder.Services.AddDbContext<VeterinariaContext>(options => options.UseNpgsql(connection));
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options => options.AddDocumentTransformer((document, context, ct) =>
+{
+    document.Info.Title = "Veterinaria API";
+    document.Info.Description = "Laboratorio 12: propietarios y mascotas con ASP.NET Core 10, Entity Framework Core y PostgreSQL en Neon.";
+    return Task.CompletedTask;
+}));
 builder.Services.AddCors(options => options.AddPolicy("ClienteLaboratorio", policy =>
     policy.WithOrigins(allowedOrigin.TrimEnd('/')).AllowAnyHeader().AllowAnyMethod()));
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -49,7 +54,7 @@ app.UseCors("ClienteLaboratorio");
 app.MapOpenApi();
 app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "Veterinaria API v1"));
 app.MapControllers();
-app.MapGet("/", () => Results.Redirect("/swagger"));
+app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 app.MapGet("/health", async (VeterinariaContext db, CancellationToken ct) =>
     await db.Database.CanConnectAsync(ct)
         ? Results.Ok(new { estado = "ok", baseDeDatos = "PostgreSQL" })
