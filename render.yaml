@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: lab12-veterinaria-api
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_HTTP_PORTS
+        value: '8080'
+      - key: Cors__AllowedOrigin
+        value: https://lab12-veterinaria-api.onrender.com
+      - key: ConnectionStrings__Veterinaria
+        sync: false
