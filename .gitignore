@@ -1,0 +1,11 @@
+bin/
+obj/
+.vs/
+.env
+.env.*
+!.env.example
+appsettings.*.local.json
+*.user
+*.suo
+TestResults/
+artifacts/

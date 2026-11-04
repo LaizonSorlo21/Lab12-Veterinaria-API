@@ -1,0 +1,29 @@
+name: Inicializar base y generar Scaffold
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  scaffold:
+    runs-on: ubuntu-latest
+    env:
+      ConnectionStrings__Veterinaria: ${{ secrets.VETERINARIA_DB }}
+      LAB12_DB: ${{ secrets.VETERINARIA_DB }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Ejecutar SQL en Neon
+        run: dotnet run --project tools/DbSetup -- database/01_veterinaria.sql
+      - name: Instalar EF Core
+        run: dotnet tool install --global dotnet-ef --version '10.*'
+      - name: Generar modelo desde PostgreSQL
+        run: dotnet ef dbcontext scaffold 'Name=ConnectionStrings:Veterinaria' Npgsql.EntityFrameworkCore.PostgreSQL --context VeterinariaContext --context-dir Data --output-dir Models --table propietarios --table mascotas --data-annotations --no-onconfiguring --no-pluralize --force
+      - name: Guardar modelo generado
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Models Data
+          git diff --cached --quiet || git commit -m 'Generar entidades y contexto desde PostgreSQL con Scaffold'
+          git push
