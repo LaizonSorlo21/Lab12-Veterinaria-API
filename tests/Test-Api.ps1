@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$BaseUrl = 'https://lab12-veterinaria-api.onrender.com'
 )
 $ErrorActionPreference = 'Stop'

@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
 $ownerPath = Join-Path $root 'Models/Propietarios.cs'
 $petPath = Join-Path $root 'Models/Mascotas.cs'
