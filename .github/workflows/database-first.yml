@@ -19,7 +19,9 @@ jobs:
       - name: Instalar EF Core
         run: dotnet tool install --global dotnet-ef --version '10.*'
       - name: Generar modelo desde PostgreSQL
-        run: dotnet ef dbcontext scaffold 'Name=ConnectionStrings:Veterinaria' Npgsql.EntityFrameworkCore.PostgreSQL --context VeterinariaContext --context-dir Data --output-dir Models --table propietarios --table mascotas --data-annotations --no-onconfiguring --no-pluralize --force
+        run: |
+          dotnet restore Veterinaria.Api.csproj
+          dotnet ef dbcontext scaffold 'Name=ConnectionStrings:Veterinaria' Npgsql.EntityFrameworkCore.PostgreSQL --context VeterinariaContext --context-dir Data --output-dir Models --table propietarios --table mascotas --data-annotations --no-onconfiguring --no-pluralize --force
       - name: Guardar modelo generado
         run: |
           git config user.name 'github-actions[bot]'
